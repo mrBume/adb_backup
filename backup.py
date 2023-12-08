@@ -6,7 +6,7 @@ import argparse
 #path to adb
 bin = "adb.exe"
 
-def main(argv):
+def main():
     
     parser = argparse.ArgumentParser(description="usage: backup.py [options] src dest", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
@@ -45,4 +45,4 @@ def main(argv):
             os.system(cmd)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
