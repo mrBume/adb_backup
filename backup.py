@@ -1,21 +1,33 @@
 import sys
 import os
 import subprocess
+import argparse
 
 #path to adb
 bin = "adb.exe"
 
 def main(argv):
-    source_dir = argv[1]
-    output_dir = argv[2]
+    
+    parser = argparse.ArgumentParser(description="usage: backup.py [options] src dest", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    
+    parser.add_argument("src", help="Source location")
+    parser.add_argument("dest", help="Destination location")
+    parser.add_argument("-s", "--show-only", action="store_true", help="Show number of files not in dest")
+    parser.add_argument("-i", "--init", action="store_true", help="Init adb to discover devices")
 
+    args = vars(parser.parse_args())
+
+    if args["init"]:
+        cmd = bin + " devices"
+        print(subprocess.check_output(cmd).decode())
+    
     ## Get files in local
     local_files = []
-    for root, subfolder, files in os.walk(output_dir):
+    for root, subfolder, files in os.walk(args["dest"]):
         local_files.extend(files)
     
     ## Generate file list from device
-    cmd = bin + " shell ls " + source_dir
+    cmd = bin + " shell (cd {0} && ls *.*)".format(args["src"])
     source_files = subprocess.check_output(cmd).decode()
     source_files = source_files.splitlines()
 
@@ -27,10 +39,10 @@ def main(argv):
 
     print("files_to_update: {}".format(len(files_to_update)))
 
-    for file in files_to_update:
-        cmd = bin + " pull \"" + source_dir + "/" + file + "\" " +  output_dir
-        # print(cmd)
-        os.system(cmd)
+    if not args["show_only"]:
+        for file in files_to_update:
+            cmd = bin + " pull \"" + args["src"] + "/" + file + "\" " +  args["dest"]
+            os.system(cmd)
 
 if __name__ == "__main__":
     main(sys.argv)
